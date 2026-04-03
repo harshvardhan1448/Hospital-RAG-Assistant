@@ -51,31 +51,20 @@ class SupabaseManager:
         Perform cosine similarity search using pgvector in Supabase.
         """
         try:
-            print(f"[DEBUG] Query embedding length: {len(query_embedding)}")
-            print(f"[DEBUG] Sample values: first={query_embedding[0]}, last={query_embedding[-1]}")
+            # Format embedding to match PostgreSQL vector storage precision
+            # Round to 9 decimal places to match database format
+            vector_str = "[" + ",".join(str(round(float(x), 9)) for x in query_embedding) + "]"
             
-            # Convert embedding to PostgreSQL vector format: "[val1,val2,...,val384]"
-            vector_str = "[" + ",".join(str(float(x)) for x in query_embedding) + "]"
-            print(f"[DEBUG] Vector string length: {len(vector_str)}")
-            print(f"[DEBUG] Vector string first 100 chars: {vector_str[:100]}")
-            
-            # Call RPC function with vector string
-            print(f"[DEBUG] Calling RPC with match_count={k}")
+            # Pass as string to RPC (which expects text and casts to vector)
             response = self.supabase.rpc(
                 "match_documents",
                 {
-                    "query_embedding": vector_str,
+                    "query_embedding": vector_str,  # Pass as PostgreSQL vector format
                     "match_count": k
                 }
             ).execute()
 
-            print(f"[DEBUG] RPC response type: {type(response)}")
-            print(f"[DEBUG] RPC response: {response}")
-            print(f"[DEBUG] RPC response.data type: {type(response.data) if hasattr(response, 'data') else 'N/A'}")
-            print(f"[DEBUG] RPC returned {len(response.data) if response.data else 0} results")
-
             if not response.data:
-                print("[DEBUG] No results from RPC similarity search")
                 return []
 
             return [
@@ -89,7 +78,6 @@ class SupabaseManager:
             ]
 
         except Exception as e:
-            print(f"[ERROR] similarity_search failed: {str(e)}")
             import traceback
             traceback.print_exc()
             return []

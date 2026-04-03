@@ -20,14 +20,9 @@ def get_llm_client() -> ChatGroq:
 async def retrieve_relevant_chunks(query: str, k: int = config.TOP_K_CHUNKS) -> List[dict]:
     """Retrieve top-k most relevant document chunks for the query."""
     try:
-        print(f"[DEBUG] Retrieving chunks for query: {query}")
         query_embedding = get_query_embedding(query)
-        print(f"[DEBUG] Query embedding generated. Length: {len(query_embedding)}")
-        print(f"[DEBUG] Query embedding (first 10): {query_embedding[:10]}")
-        
         supabase = get_supabase_manager()
         chunks = await supabase.similarity_search(query_embedding, k=k)
-        print(f"[DEBUG] Retrieved {len(chunks)} chunks")
         return chunks
     except Exception as e:
         print(f"Error retrieving chunks: {str(e)}")
