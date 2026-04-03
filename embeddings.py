@@ -1,19 +1,38 @@
-from sentence_transformers import SentenceTransformer
-import config
+import os
+import requests
+from typing import List
 
-_model = None
+# Use Hugging Face Inference API (free, no local model loading needed)
+HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+HF_API_KEY = os.getenv("HF_API_KEY", "")  # Optional for higher rate limits
 
-def get_model() -> SentenceTransformer:
-    """Load once, reuse everywhere."""
-    global _model
-    if _model is None:
-        _model = SentenceTransformer(config.EMBEDDING_MODEL)
-    return _model
+def embed_texts(texts: List[str]) -> List[List[float]]:
+    """Embed texts using Hugging Face Inference API."""
+    if not texts:
+        return []
+    
+    headers = {}
+    if HF_API_KEY:
+        headers["Authorization"] = f"Bearer {HF_API_KEY}"
+    
+    payload = {
+        "inputs": texts,
+        "options": {"wait_for_model": True}
+    }
+    
+    try:
+        response = requests.post(HF_API_URL, json=payload, headers=headers, timeout=60)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"[EMBEDDING] Error: {str(e)}")
+        raise Exception(f"Failed to generate embeddings: {str(e)}")
 
-def embed_texts(texts: list) -> list:
-    """Embed a list of strings."""
-    return get_model().encode(texts, show_progress_bar=False).tolist()
+def embed_query(query: str) -> List[float]:
+    """Embed a single query using Hugging Face Inference API."""
+    result = embed_texts([query])
+    return result[0] if result else []
 
-def embed_query(query: str) -> list:
-    """Embed a single query string."""
-    return get_model().encode([query], show_progress_bar=False)[0].tolist()
+def get_model():
+    """Dummy function for compatibility - not needed with API."""
+    return None
