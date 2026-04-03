@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build: .
+    container_name: hospital-rag-api
+    ports:
+      - "8000:8000"
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - hospital-rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Streamlit UI (Optional)
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: hospital-rag-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://api:8000
+    volumes:
+      - ./:/app
+    depends_on:
+      - api
+    networks:
+      - hospital-rag-network
+    command: streamlit run app_ui.py --server.port=8501 --server.address=0.0.0.0
+
+networks:
+  hospital-rag-network:
+    driver: bridge
+
+volumes:
+  # Optional: for persistent data if using local database
+  data:
