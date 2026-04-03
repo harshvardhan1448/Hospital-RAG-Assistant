@@ -1,53 +1,50 @@
-import os
-import requests
+import hashlib
+import math
+import re
 from typing import List
-import time
 
-# Use Hugging Face Inference API (free, no local model loading needed)
-HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
-HF_API_KEY = os.getenv("HF_API_KEY", "")  # Optional for higher rate limits
+import config
+
+TOKEN_PATTERN = re.compile(r"[A-Za-z0-9]+")
+
+
+def _tokenize(text: str) -> List[str]:
+    return TOKEN_PATTERN.findall(text.lower())
+
+
+def _hash_token(token: str) -> int:
+    digest = hashlib.sha256(token.encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big") % config.EMBEDDING_DIMENSION
+
+
+def _build_embedding(text: str) -> List[float]:
+    vector = [0.0] * config.EMBEDDING_DIMENSION
+    tokens = _tokenize(text)
+
+    if not tokens:
+        return vector
+
+    for token in tokens:
+        vector[_hash_token(token)] += 1.0
+
+    norm = math.sqrt(sum(value * value for value in vector))
+    if norm:
+        vector = [value / norm for value in vector]
+
+    return vector
+
 
 def embed_texts(texts: List[str]) -> List[List[float]]:
-    """Embed texts using Hugging Face Inference API."""
-    if not texts:
-        return []
-    
-    print(f"[EMBEDDING] Starting embedding for {len(texts)} texts")
-    
-    headers = {}
-    if HF_API_KEY:
-        headers["Authorization"] = f"Bearer {HF_API_KEY}"
-    
-    payload = {
-        "inputs": texts,
-        "options": {"wait_for_model": True}
-    }
-    
-    try:
-        print(f"[EMBEDDING] Calling HF API at {HF_API_URL}")
-        start_time = time.time()
-        response = requests.post(HF_API_URL, json=payload, headers=headers, timeout=120)
-        elapsed = time.time() - start_time
-        print(f"[EMBEDDING] HF API response: {response.status_code} (took {elapsed:.1f}s)")
-        
-        response.raise_for_status()
-        result = response.json()
-        print(f"[EMBEDDING] Successfully embedded {len(texts)} texts")
-        return result
-    except requests.exceptions.Timeout:
-        print(f"[EMBEDDING ERROR] HF API timeout after 120s")
-        raise Exception("HF API request timed out. Please try again.")
-    except Exception as e:
-        print(f"[EMBEDDING ERROR] {type(e).__name__}: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise Exception(f"Failed to generate embeddings: {str(e)}")
+    """Embed a list of strings using a local deterministic hashing vectorizer."""
+    print(f"[EMBEDDING] Using local hashing embedder for {len(texts)} texts")
+    return [_build_embedding(text) for text in texts]
+
 
 def embed_query(query: str) -> List[float]:
-    """Embed a single query using Hugging Face Inference API."""
-    result = embed_texts([query])
-    return result[0] if result else []
+    """Embed a single query string."""
+    return _build_embedding(query)
+
 
 def get_model():
-    """Dummy function for compatibility - not needed with API."""
+    """Compatibility hook for the previous embedding interface."""
     return None
