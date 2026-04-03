@@ -6,6 +6,8 @@ An intelligent AI-powered Retrieval-Augmented Generation (RAG) system that answe
 
 This system lets you upload hospital PDF documents and ask questions about them. The AI reads your documents and answers using **only the information found in them** - no hallucinations, no making things up.
 
+Deployment status: the backend is live on Render, and the deployed UI should point to the Render API instead of localhost.
+
 **Key Features:**
 - 📄 Upload PDF hospital documents
 - 🤖 Ask questions in natural language
@@ -61,14 +63,14 @@ Hospital-RAG-Assistant/
 
 | Component | Technology | Why? |
 |-----------|-----------|------|
-| **Embeddings** | sentence-transformers | Free, runs locally, no API calls |
+| **Embeddings** | Local hashing embedder | No download, no API calls |
 | **AI Model** | Groq (Llama 3.1) | Free, very fast, up to 4000+ tokens/min |
 | **Database** | Supabase (PostgreSQL) | Free tier, unlimited usage |
 | **Vector Search** | pgvector | Built-in, fast similarity search |
 | **Web Server** | FastAPI | Fast, production-ready, lightweight |
 | **Web UI** | Streamlit | Beautiful, requires no frontend skills |
 
-> **💰 Cost: $0/month** - All services have free tiers!
+> **💰 Cost: low to $0/month** - Supabase and Groq can stay on free tiers; hosting depends on your deployment plan.
 
 ## 🚀 Get Started in 5 Minutes
 
@@ -129,7 +131,7 @@ Your `.env` should look like:
 SUPABASE_URL=https://abc123.supabase.co
 SUPABASE_KEY=eyJhbGciOiJIUzI1NiIs...
 GROQ_API_KEY=gsk_abc123...
-API_BASE_URL=http://localhost:8000
+API_BASE_URL=https://hospital-rag-assistant-z1df.onrender.com
 ```
 
 ### Step 5: Setup Database (One-Time)
@@ -170,7 +172,7 @@ Local URL: http://localhost:8501
 
 ### Step 7: Use It!
 
-Open your browser to **http://localhost:8501**
+Open your browser to the deployed Streamlit app, or if running locally, use **http://localhost:8501**
 
 1. Upload a hospital PDF document
 2. Ask a question (e.g., "What are the OPD timings?")
@@ -249,8 +251,8 @@ CHUNK_OVERLAP = 100
 # How many results to show
 TOP_K_CHUNKS = 4
 
-# Embedding model (runs locally)
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+# Embedding model is handled locally by the hashing embedder
+EMBEDDING_MODEL = "local-hashing"
 EMBEDDING_DIMENSION = 384
 
 # Database table name

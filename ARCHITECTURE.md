@@ -64,7 +64,7 @@ Your Question: "What are OPD timings?"
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    YOUR WEB BROWSER                             │
-│                  (http://localhost:8501)                        │
+│      (Local: http://localhost:8501 or deployed Streamlit URL)   │
 │                                                                 │
 │  ┌────────────────────────────────────────────────────────┐   │
 │  │  Streamlit Interface (app_ui.py)                       │   │
@@ -86,7 +86,7 @@ Your Question: "What are OPD timings?"
 │  │ 2. Call ingestion.py                                │    │
 │  │    • Extract text (PyPDF2)                          │    │
 │  │    • Split into chunks (LangChain)                  │    │
-│  │    • Create embeddings (sentence-transformers)      │    │
+│  │    • Create embeddings (local hashing embedder)     │    │
 │  │ 3. Save to database                                 │    │
 │  │ 4. Return success                                   │    │
 │  └──────────────────────────────────────────────────────┘    │
@@ -217,10 +217,10 @@ Key settings:
   - Database search: 100ms
   - AI answer generation: 500ms
 
-- **Embedding model**: Runs on your CPU (all-MiniLM-L6-v2)
-  - 384 dimensions
-  - 22 million parameters
-  - Light and fast
+- **Embedding model**: Local hashing embedder
+     - 384 dimensions
+     - No external download or model hosting
+     - Fast and deterministic
 
 ---
 
@@ -228,7 +228,7 @@ Key settings:
 
 | Part | Technology | Why? |
 |------|-----------|------|
-| Embeddings | sentence-transformers | Runs locally, no API calls, free |
+| Embeddings | Local hashing embedder | Runs locally, no API calls, free |
 | LLM (AI) | Groq | Free tier, fast, 8B parameters |
 | Database | Supabase | Free tier, PostgreSQL, pgvector |
 | Server | FastAPI | Lightweight, fast, Python-native |

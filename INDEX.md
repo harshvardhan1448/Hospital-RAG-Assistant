@@ -14,6 +14,8 @@ A complete **AI assistant for hospital documents** that:
 
 **Everything is ready to use.** No additional setup beyond API keys!
 
+Deployment status: the backend is live on Render at https://hospital-rag-assistant-z1df.onrender.com.
+
 ---
 
 ## 📁 Project Files Explained
@@ -27,7 +29,7 @@ A complete **AI assistant for hospital documents** that:
 | `ingestion.py` | 📄 Reads PDFs and creates embeddings |
 | `rag_pipeline.py` | 🧠 Asks AI to answer questions |
 | `supabase_db.py` | 💾 Stores documents in database |
-| `embeddings.py` | 🔤 Creates AI fingerprints of text |
+| `embeddings.py` | 🔤 Creates AI fingerprints of text locally |
 | `config.py` | ⚙️ Settings and preferences |
 
 ### 📚 Configuration Files
@@ -166,7 +168,7 @@ streamlit run app_ui.py
 ```
 
 ### Step 5: Test It (5 min)
-- Open http://localhost:8501
+- Open http://localhost:8501 for local runs, or your deployed Streamlit URL if hosted
 - Upload a hospital PDF
 - Ask "What are OPD timings?"
 - Get answer!
@@ -418,7 +420,7 @@ API_BASE_URL=http://localhost:8000
 | **Database** | Supabase | Free-$25 | Free tier: 500MB |
 | **Embeddings** | OpenAI | ~$1-5 | Per 1M tokens |
 | **LLM** | Groq | Free | Generous free tier |
-| **Hosting** | Render | Free-$7 | Free with ads |
+| **Hosting** | Render | Free-$7 | Backend currently deployed |
 | **Total** | Combined | Free-$35 | Minimal for hobby |
 
 **Production tip**: Use Groq for both LLM and embeddings (cheaper alternative)

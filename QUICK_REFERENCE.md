@@ -13,7 +13,7 @@ python main.py                    # Terminal 1: Start backend
 streamlit run app_ui.py           # Terminal 2: Start UI
 ```
 
-Then open: **http://localhost:8501**
+If you are running locally, open: **http://localhost:8501**. If you are using the deployed backend, set `API_BASE_URL` to the Render URL first.
 
 ---
 
@@ -26,7 +26,8 @@ Then open: **http://localhost:8501**
 | Results | Middle area | See AI answers |
 | Chat history | Left sidebar | See past questions |
 | Your documents | Left sidebar | List of uploaded PDFs |
-| API docs | http://localhost:8000/docs | Test API endpoints |
+| API docs | http://localhost:8000/docs | Test local API endpoints |
+| Deployed API | https://hospital-rag-assistant-z1df.onrender.com | Production backend |
 | Logs | Terminal window | See what's happening |
 
 ---
@@ -78,12 +79,12 @@ CHUNK_OVERLAP = 50        # Less overlap
 
 ### Change AI Model
 The system uses:
-- **Embeddings**: `all-MiniLM-L6-v2` (local, 384-dim)
+- **Embeddings**: local hashing embedder (384-dim)
 - **LLM**: `llama-3.1-8b-instant` (Groq)
 
 To change, edit `config.py`:
 ```python
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"  # Can't change (local only)
+EMBEDDING_MODEL = "local-hashing"  # Local deterministic embedder
 ```
 
 ---

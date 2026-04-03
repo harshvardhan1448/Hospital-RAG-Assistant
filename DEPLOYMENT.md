@@ -2,6 +2,8 @@
 
 Ready to share your RAG assistant with others? This guide shows how.
 
+Current status: the FastAPI backend is already live on Render at https://hospital-rag-assistant-z1df.onrender.com.
+
 ---
 
 ## 📊 Deployment Options
@@ -75,21 +77,21 @@ git push -u origin main
    - Click **"Advanced"**
    - Add these:
      ```
-     SUPABASE_URL=your_supabase_url
-     SUPABASE_KEY=your_supabase_key
-     GROQ_API_KEY=your_groq_key
-     API_BASE_URL=https://hospital-rag-xxx.onrender.com
+       SUPABASE_URL=your_supabase_url
+       SUPABASE_KEY=your_supabase_key
+       GROQ_API_KEY=your_groq_key
+       API_BASE_URL=https://hospital-rag-assistant-z1df.onrender.com
      ```
 
 8. **Deploy!** (Wait 5-10 minutes)
 
-Your app will be at: `https://hospital-rag-xxx.onrender.com`
+Your backend will be at: `https://hospital-rag-assistant-z1df.onrender.com`
 
 ---
 
 ### For Streamlit UI on Render:
 
-Create a second service:
+Create a second service for the Streamlit UI if you want the UI hosted separately:
 
 1. **New** → **Web Service**
 2. Same repo, but:
@@ -153,7 +155,7 @@ Then deploy to AWS ECS, Google Cloud Run, etc.
 
 Before going live, verify:
 
-- [ ] `.env` file is on server (not in git)
+- [ ] `.env` file is on server or mapped through dashboard secrets (not in git)
 - [ ] API keys are secret/protected
 - [ ] Database has backups enabled
 - [ ] HTTPS is enabled (SSL certificate)
@@ -175,7 +177,7 @@ Before going live, verify:
 # Check their dashboard
 
 # For local:
-curl http://localhost:8000/
+curl https://hospital-rag-assistant-z1df.onrender.com/
 
 # Should return:
 # {"status":"healthy","message":"..."}
@@ -234,7 +236,7 @@ Once deployed, share:
 
 ```
 Here's our Hospital RAG Assistant:
-https://hospital-rag-assistant.onrender.com
+https://hospital-rag-assistant-z1df.onrender.com
 
 Upload a hospital PDF and ask questions!
 

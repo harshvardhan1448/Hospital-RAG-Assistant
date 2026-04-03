@@ -94,6 +94,8 @@ GROQ_API_KEY=paste_your_groq_key_here
 API_BASE_URL=http://localhost:8000
 ```
 
+If you are using the deployed backend, replace `API_BASE_URL` with `https://hospital-rag-assistant-z1df.onrender.com`.
+
 5. Replace the values with what you copied from Supabase and Groq
 6. Save the file
 
@@ -241,6 +243,8 @@ Use a hospital PDF and ask:
 ```
 
 Enjoy! 🚀
+
+Deployment note: if the backend is already deployed, the UI must point to the Render URL before uploads will work.
 - [ ] Verify answers are accurate
 
 ### Medium Term (next few days):

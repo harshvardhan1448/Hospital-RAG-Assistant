@@ -13,7 +13,7 @@ Got a problem? Find it here and fix it!
 Error: Cannot connect to API at http://localhost:8000
 ```
 
-**What it means:** Backend server isn't running
+**What it means:** Backend server isn't running, or the UI is pointing at the wrong API URL
 
 **Fix:**
 1. Open a terminal
@@ -21,6 +21,8 @@ Error: Cannot connect to API at http://localhost:8000
 3. Run: `python main.py`
 4. Wait for: `✓ Application initialized successfully`
 5. Don't close this terminal!
+
+If you are using the deployed app, verify the UI points to https://hospital-rag-assistant-z1df.onrender.com instead of localhost.
 
 ---
 
