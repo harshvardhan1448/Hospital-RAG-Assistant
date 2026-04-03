@@ -51,24 +51,36 @@ st.markdown("""
 
 # ==================== Configuration ====================
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+try:
+    API_BASE_URL = st.secrets.get("API_BASE_URL", os.getenv("API_BASE_URL", "http://localhost:8000"))
+except Exception:
+    API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 # ==================== Helper Functions ====================
 
 def upload_document(uploaded_file) -> dict:
     """Upload document to backend API"""
     try:
-        files = {"file": uploaded_file}
+        files = {
+            "file": (
+                uploaded_file.name,
+                uploaded_file.getvalue(),
+                uploaded_file.type or "application/pdf",
+            )
+        }
+        print(f"[UI] Uploading {uploaded_file.name} to {API_BASE_URL}/upload")
         response = requests.post(
             f"{API_BASE_URL}/upload",
             files=files,
             timeout=120
         )
+        print(f"[UI] Upload response: {response.status_code} {response.text[:500]}")
         response.raise_for_status()
         return response.json()
     except requests.exceptions.ConnectionError:
         return {"status": "error", "message": f"Cannot connect to API at {API_BASE_URL}"}
     except Exception as e:
+        print(f"[UI] Upload error: {type(e).__name__}: {e}")
         return {"status": "error", "message": str(e)}
 
 
