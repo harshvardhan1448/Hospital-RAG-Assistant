@@ -1,18 +1,23 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
-# Supabase Configuration
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Try to load from Streamlit secrets first (for Cloud), then fallback to .env
+try:
+    import streamlit as st
+    SUPABASE_URL = st.secrets.get("SUPABASE_URL")
+    SUPABASE_KEY = st.secrets.get("SUPABASE_KEY")
+    GROQ_API_KEY = st.secrets.get("GROQ_API_KEY")
+except:
+    # Fallback to .env file (for local development)
+    load_dotenv()
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 SUPABASE_TABLE = "documents"
 
-# LLM Configuration - Groq (free)
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
 # Embedding Configuration - sentence-transformers (free, local, no API key)
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"  # 384 dimensions
+# Using minimal model for Render free tier deployment
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"  # 22MB, 384 dimensions - lightweight & efficient
 EMBEDDING_DIMENSION = 384
 
 # RAG Configuration
