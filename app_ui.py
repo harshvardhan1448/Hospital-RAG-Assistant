@@ -158,6 +158,8 @@ with st.sidebar:
     
     if api_url != API_BASE_URL:
         API_BASE_URL = api_url
+
+    st.caption(f"Resolved API: {API_BASE_URL}")
     
     st.divider()
     
@@ -171,7 +173,9 @@ with st.sidebar:
     if uploaded_file is not None:
         if st.button("📤 Upload Document", use_container_width=True):
             with st.spinner("Uploading and processing document..."):
+                st.write(f"Uploading to: {API_BASE_URL}/upload")
                 result = upload_document(uploaded_file)
+                st.write(result)
                 
                 if result["status"] == "success":
                     st.success(f"✓ Document uploaded successfully!")
