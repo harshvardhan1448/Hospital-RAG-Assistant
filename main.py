@@ -80,17 +80,21 @@ async def upload_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
     try:
+        print(f"[UPLOAD] Starting upload for: {file.filename}")
         result = await ingest_document(file)
+        print(f"[UPLOAD] Ingestion result: {result}")
 
         if result["status"] == "error":
             raise HTTPException(status_code=400, detail=result.get("message", "Error ingesting document"))
 
+        print(f"[UPLOAD] Storing {len(result['documents'])} documents in Supabase")
         supabase = get_supabase_manager()
         db_result = await supabase.store_documents(result["documents"])
 
         if db_result["status"] == "error":
             raise HTTPException(status_code=500, detail=db_result.get("message", "Error storing documents"))
 
+        print(f"[UPLOAD] Success: {file.filename}")
         return {
             "status": "success",
             "filename": result["filename"],
@@ -102,6 +106,9 @@ async def upload_document(file: UploadFile = File(...)):
     except HTTPException:
         raise
     except Exception as e:
+        print(f"[UPLOAD ERROR] Exception: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error uploading document: {str(e)}")
 
 
