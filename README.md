@@ -1,152 +1,274 @@
 # 🏥 Hospital RAG Assistant
 
-An AI-powered Retrieval-Augmented Generation (RAG) system that answers questions about hospital documents using embeddings, vector search, and large language models.
+An intelligent AI-powered Retrieval-Augmented Generation (RAG) system that answers questions about hospital documents. **100% Free to run** - uses no paid APIs!
 
-## 📋 Project Overview
+## 📋 What This Does
 
-This system implements a complete RAG pipeline that:
-- ✅ Ingests PDF hospital documents
-- ✅ Extracts and chunks text intelligently
-- ✅ Generates embeddings for semantic search
-- ✅ Stores vectors in Supabase (pgvector)
-- ✅ Retrieves relevant context using similarity search
-- ✅ Generates accurate answers using LLMs (Groq/OpenAI)
-- ✅ Prevents hallucination by only using document context
-- ✅ Provides a user-friendly Streamlit UI
+This system lets you upload hospital PDF documents and ask questions about them. The AI reads your documents and answers using **only the information found in them** - no hallucinations, no making things up.
 
-## 🏗️ Architecture
+**Key Features:**
+- 📄 Upload PDF hospital documents
+- 🤖 Ask questions in natural language
+- 🔍 AI searches documents for answers
+- ✅ Always cites where the answer came from
+- 💰 **Completely FREE** - uses free APIs only
+- 🖥️ Works locally on your machine
+- 🎨 Beautiful web interface
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    USER INTERFACE (Streamlit)              │
-├─────────────────────────────────────────────────────────────┤
-│                    FastAPI Backend (main.py)               │
-├──────────────────────┬──────────────────────┬───────────────┤
-│   Document Ingestion │   RAG Pipeline       │  DB Manager   │
-│   (ingestion.py)     │   (rag_pipeline.py)  │  (supabase_db)│
-├─────────────────────────────────────────────────────────────┤
-│  OpenAI Embeddings   │    Groq/OpenAI LLM   │ Supabase      │
-│  (Text Embeddings)   │  (Answer Generation) │ (pgvector)    │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Data Flow
+## 🏗️ How It Works
 
 ```
-1. Document Upload
-   PDF → Extract Text → Chunk → Generate Embeddings → Store in DB
+You Upload PDF
+      ↓
+System Breaks Into Chunks
+      ↓
+Creates Embeddings (AI Text Fingerprints)
+      ↓
+Stores in Database
+      ↓
 
-2. Query Processing
-   Question → Generate Embedding → Vector Search → Retrieve Top-K → LLM → Answer
+You Ask a Question
+      ↓
+System Creates Embedding of Your Question
+      ↓
+Finds Similar Chunks in Database
+      ↓
+Sends Chunks to AI Model
+      ↓
+AI Generates Answer (Only From Your Documents)
+      ↓
+You Get Answer With Source Pages
 ```
 
-## 📁 Project Structure
+## 📁 What's Inside
 
 ```
-NexovAi/
-├── main.py                 # FastAPI backend (upload/query endpoints)
-├── ingestion.py            # PDF processing & chunking
-├── rag_pipeline.py         # RAG logic & LLM integration
-├── supabase_db.py          # Supabase vector database manager
-├── app_ui.py               # Streamlit frontend
-├── config.py               # Configuration settings
-├── requirements.txt        # Python dependencies
-├── .env.example             # Environment variables template
+Hospital-RAG-Assistant/
+├── main.py                 # API Server (handles uploads & questions)
+├── app_ui.py               # Web Interface (Streamlit)
+├── ingestion.py            # Document Processing
+├── rag_pipeline.py         # AI Logic & Answering
+├── supabase_db.py          # Database Manager
+├── embeddings.py           # Embedding Generator
+├── config.py               # Settings
+├── requirements.txt        # Python Libraries
+├── supabase_setup.sql      # Database Setup
+├── .env.example            # Configuration Template
 └── README.md               # This file
 ```
 
-## 🚀 Quick Start
+## 🎯 Tech Stack (All Free!)
 
-### Prerequisites
-- Python 3.9+
-- A Supabase account (free tier available)
-- OpenAI API key (for embeddings)
-- Groq API key (free, for LLM) OR OpenAI API key
+| Component | Technology | Why? |
+|-----------|-----------|------|
+| **Embeddings** | sentence-transformers | Free, runs locally, no API calls |
+| **AI Model** | Groq (Llama 3.1) | Free, very fast, up to 4000+ tokens/min |
+| **Database** | Supabase (PostgreSQL) | Free tier, unlimited usage |
+| **Vector Search** | pgvector | Built-in, fast similarity search |
+| **Web Server** | FastAPI | Fast, production-ready, lightweight |
+| **Web UI** | Streamlit | Beautiful, requires no frontend skills |
 
-### 1. Install Dependencies
+> **💰 Cost: $0/month** - All services have free tiers!
+
+## 🚀 Get Started in 5 Minutes
+
+### Step 1: Prerequisites
+
+You need:
+- Python 3.9 or newer
+- A computer that can run Python
+- Internet connection (for API setup only)
+
+### Step 2: Download & Setup
 
 ```bash
+# Clone the project
+git clone https://github.com/harshvardhan1448/Hospital-RAG-Assistant.git
+cd Hospital-RAG-Assistant
+
+# Create virtual environment (optional but recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Set Up Supabase
+### Step 3: Get Free API Keys (5 minutes)
 
-1. **Create Supabase Project**
-   - Go to [supabase.com](https://supabase.com)
-   - Create a new project
-   - Copy your `SUPABASE_URL` and `SUPABASE_KEY` (anon key)
+#### A. Supabase (Database) - 100% Free
 
-2. **Create Table with pgvector**
-   - In Supabase dashboard, go to SQL Editor
-   - Run the following SQL:
+1. Go to **[supabase.com](https://supabase.com)** → Click "Sign Up"
+2. Sign up with GitHub, Google, or Email
+3. Create new project
+4. Once created, go to **Settings** → **API**
+5. Copy these two values:
+   - **Project URL** → This is `SUPABASE_URL`
+   - **Anon public** key → This is `SUPABASE_KEY`
 
-```sql
--- Enable pgvector extension
-CREATE EXTENSION IF NOT EXISTS vector;
+#### B. Groq (AI Model) - 100% Free
 
--- Create documents table
-CREATE TABLE IF NOT EXISTS documents (
-  id BIGSERIAL PRIMARY KEY,
-  filename TEXT NOT NULL,
-  chunk_index INTEGER,
-  content TEXT,
-  embedding vector(1536),
-  page TEXT,
-  metadata JSONB,
-  created_at TIMESTAMP DEFAULT NOW()
-);
+1. Go to **[console.groq.com](https://console.groq.com)**
+2. Sign up (takes 1 minute)
+3. Click **API Keys** → **Create New API Key**
+4. Copy it → This is `GROQ_API_KEY`
 
--- Create index for vector similarity search
-CREATE INDEX documents_embedding_idx ON documents 
-USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+That's it! No payment needed, free tier is unlimited.
 
--- Create RPC function for similarity search
-CREATE OR REPLACE FUNCTION match_documents(
-  query_embedding vector,
-  match_count int DEFAULT 5
-) RETURNS TABLE (
-  id bigint,
-  content text,
-  similarity float8,
-  page text,
-  metadata jsonb
-) LANGUAGE plpgsql AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    documents.id,
-    documents.content,
-    1 - (documents.embedding <=> query_embedding) as similarity,
-    documents.page,
-    documents.metadata
-  FROM documents
-  ORDER BY documents.embedding <=> query_embedding
-  LIMIT match_count;
-END;
-$$;
-```
-
-### 3. Configure Environment
-
-Copy `.env.example` to `.env` and fill in:
+### Step 4: Configure Environment
 
 ```bash
+# Copy the example file
 cp .env.example .env
+
+# Edit .env and add your keys
 ```
 
-Edit `.env`:
+Your `.env` should look like:
 ```
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-anon-key
-GROQ_API_KEY=your-groq-api-key
-OPENAI_API_KEY=your-openai-api-key
+SUPABASE_URL=https://abc123.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIs...
+GROQ_API_KEY=gsk_abc123...
+API_BASE_URL=http://localhost:8000
 ```
 
-Get API Keys:
-- **Groq**: [console.groq.com](https://console.groq.com) (Free)
-- **OpenAI**: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+### Step 5: Setup Database (One-Time)
 
-### 4. Run the Application
+1. Go to your **Supabase Dashboard**
+2. Click **SQL Editor** → **New Query**
+3. Copy entire content from **`supabase_setup.sql`**
+4. Paste into the query box
+5. Click **Run**
+
+Done! Your database is ready.
+
+### Step 6: Run the Application
+
+Open **two terminal windows**:
+
+**Terminal 1 - Start the API Server:**
+```bash
+python main.py
+```
+
+You should see:
+```
+✓ Application initialized successfully
+INFO:     Uvicorn running on http://0.0.0.0:8000
+```
+
+**Terminal 2 - Start the Web Interface:**
+```bash
+streamlit run app_ui.py
+```
+
+You should see:
+```
+You can now view your Streamlit app in your browser
+Local URL: http://localhost:8501
+```
+
+### Step 7: Use It!
+
+Open your browser to **http://localhost:8501**
+
+1. Upload a hospital PDF document
+2. Ask a question (e.g., "What are the OPD timings?")
+3. Get instant answer with source pages!
+
+## 📖 API Usage (For Developers)
+
+### Upload a Document
+
+```bash
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@hospital.pdf"
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "filename": "hospital.pdf",
+  "pages": 5,
+  "chunks": 25,
+  "message": "Document uploaded successfully with 25 chunks"
+}
+```
+
+### Ask a Question
+
+```bash
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the emergency number?"}'
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "answer": "The emergency number is 1066.",
+  "sources": ["page 1"],
+  "chunks_found": 2,
+  "chunks": [...]
+}
+```
+
+### Get Documents
+
+```bash
+curl "http://localhost:8000/documents"
+```
+
+### Delete Document
+
+```bash
+curl -X DELETE "http://localhost:8000/documents/hospital.pdf"
+```
+
+## 🧪 Test It Out
+
+Try these questions with a hospital document:
+
+- "What are the OPD timings?"
+- "Who is the cardiologist?"
+- "What is the MRI cost?"
+- "Can I cancel a 24-hour appointment?"
+- "What is the ICU cost per day?"
+
+## ⚙️ Configuration
+
+Edit `config.py` to customize behavior:
+
+```python
+# How much text in each chunk
+CHUNK_SIZE = 500
+CHUNK_OVERLAP = 100
+
+# How many results to show
+TOP_K_CHUNKS = 4
+
+# Embedding model (runs locally)
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+EMBEDDING_DIMENSION = 384
+
+# Database table name
+SUPABASE_TABLE = "documents"
+```
+
+## 🔒 Security & Privacy
+
+✅ **Your documents stay private:**
+- Documents are stored only in YOUR Supabase database
+- You control access with your API keys
+- No third-party sees your documents
+- Embeddings never sent to OpenAI
+
+✅ **API Keys are safe:**
+- `.env` file is in `.gitignore` (never uploaded)
+- Never hardcode secrets in code
+- Use environment variables
 
 **Terminal 1 - Start FastAPI Backend:**
 ```bash

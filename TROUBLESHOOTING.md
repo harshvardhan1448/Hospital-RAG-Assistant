@@ -1,83 +1,415 @@
-# Hospital RAG Assistant - Troubleshooting Guide
+# 🔧 Troubleshooting Guide
 
-## Quick Issue Lookup
-
-| Error | Solution |
-|-------|----------|
-| `ModuleNotFoundError: No module named` | Install missing packages: `pip install -r requirements.txt` |
-| `Cannot connect to API at http://localhost:8000` | Start FastAPI backend: `python main.py` |
-| `SUPABASE_URL or SUPABASE_KEY not set` | Copy `.env.example` to `.env` and fill in values |
-| `OpenAI API Error: Invalid API Key` | Verify OPENAI_API_KEY in .env is correct |
-| `No documents found in database` | Upload a PDF first using the UI or test_api.py |
+Got a problem? Find it here and fix it!
 
 ---
 
-## Installation & Setup Issues
+## 🎯 Common Issues & Fixes
 
-### Problem: Python not found
+### "Cannot connect to API"
 
-**Error:**
+**Error message:**
 ```
-'python' is not recognized as an internal or external command
-```
-
-**Solutions:**
-1. Install Python from [python.org](https://python.org)
-2. Make sure to check "Add Python to PATH" during installation
-3. Restart terminal after installation
-4. Try `python3` instead of `python`
-
-### Problem: Virtual environment not activating
-
-**Error:**
-```
-The term 'venv\Scripts\activate.bat' is not recognized
+Error: Cannot connect to API at http://localhost:8000
 ```
 
-**Solutions:**
+**What it means:** Backend server isn't running
+
+**Fix:**
+1. Open a terminal
+2. Navigate to your project folder
+3. Run: `python main.py`
+4. Wait for: `✓ Application initialized successfully`
+5. Don't close this terminal!
+
+---
+
+### "supabase_url is required"
+
+**Error message:**
+```
+Warning: Could not verify Supabase connection: supabase_url is required
+```
+
+**What it means:** Your `.env` file is missing
+
+**Fix:**
+1. Make sure you have a file named `.env` (not `.env.example`)
+2. In `.env`, add your Supabase credentials:
+   ```
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_KEY=your-key-here
+   GROQ_API_KEY=your-groq-key
+   API_BASE_URL=http://localhost:8000
+   ```
+3. Save the file
+4. Restart the backend: `python main.py`
+
+---
+
+### "ModuleNotFoundError: No module named XXX"
+
+**Error message:**
+```
+ModuleNotFoundError: No module named 'supabase'
+```
+
+**What it means:** Missing Python libraries
+
+**Fix:**
 ```bash
-# Windows - try PowerShell as Administrator
-venv\Scripts\Activate.ps1
+# Install all dependencies
+pip install -r requirements.txt
 
-# If that doesn't work, try Command Prompt
-venv\Scripts\activate.bat
-
-# Linux/Mac
-source venv/bin/activate
+# If still broken, reinstall:
+pip install -r requirements.txt --force-reinstall
 ```
 
-### Problem: pip install fails
+---
 
-**Error:**
+### "Port 8000 is already in use"
+
+**Error message:**
 ```
-ERROR: Could not find a version that satisfies the requirement
+ERROR: Address already in use
+Port 8000 is already in use
 ```
 
-**Solutions:**
+**What it means:** Another program is using port 8000
+
+**Fix (Windows):**
 ```bash
-# Upgrade pip
-pip install --upgrade pip
+# Find and kill the process
+taskkill /F /IM python.exe
 
-# Clear pip cache
-pip cache purge
+# Or change the port in main.py and rerun
+```
 
-# Try installing with specific version
-pip install --no-cache-dir -r requirements.txt
+**Fix (Mac/Linux):**
+```bash
+# Find the process
+lsof -i :8000
 
-# For Windows, try:
-python -m pip install --upgrade pip
+# Kill it
+kill -9 [PID]
+
+# Or restart your computer
+```
+
+---
+
+### "Upload takes forever" or "Hangs"
+
+**What's happening:** First upload generates embeddings (normal!)
+
+**Fix:**
+1. **This is expected!** First PDF takes 1-2 minutes
+2. **Wait patiently** - Terminal will show progress
+3. **Second uploads** are much faster (1-10 seconds)
+4. If it takes >5 minutes, something's wrong. Kill and restart.
+
+---
+
+### "0 relevant chunks retrieved"
+
+**Error message:**
+```
+Answer: I don't have that information in the provided document.
+📊 0 relevant chunks retrieved
+```
+
+**What it means:** System couldn't find the answer in your documents
+
+**Fix:**
+1. **Is the answer in your PDF?** Double-check the document
+2. **Try a different question** with different words
+3. **Make sure document is uploaded** (check left sidebar)
+4. **Try simpler questions** (e.g., "What number?" instead of "What is the numerical value of X?")
+
+---
+
+### "Invalid API Key"
+
+**Error message:**
+```
+GROQ_API_KEY is invalid
+SUPABASE_KEY is invalid
+```
+
+**What it means:** Your API keys are wrong or expired
+
+**Fix:**
+1. **For Groq Key:**
+   - Go to https://console.groq.com
+   - Generate a new key
+   - Copy to `.env`
+
+2. **For Supabase Key:**
+   - Go to your Supabase Dashboard
+   - Settings → API
+   - Copy "Anon public" key
+   - Paste into `.env`
+
+3. **Restart everything:**
+   ```bash
+   # Terminal 1
+   python main.py
+   ```
+
+---
+
+### "Database creation failed" or "Table doesn't exist"
+
+**Error message:**
+```
+Error: relation "documents" does not exist
+```
+
+**What it means:** You skipped the database setup step
+
+**Fix:**
+1. Go to your Supabase Dashboard
+   - https://console.supabase.com
+2. Click **SQL Editor**
+3. Click **New Query**
+4. Copy entire content of `supabase_setup.sql` file
+5. Paste into the SQL editor
+6. Click **Run**
+7. Should see: "Query succeeded!"
+8. Restart your backend
+
+---
+
+### "Streamlit won't start"
+
+**Error message:**
+```
+CommandNotFoundError: No module named streamlit
+```
+
+**What it means:** Streamlit not installed
+
+**Fix:**
+```bash
+pip install streamlit
+
+# Or reinstall everything
 pip install -r requirements.txt
 ```
 
+Then:
+```bash
+streamlit run app_ui.py
+```
+
 ---
 
-## API Connection Issues
+### "Browser doesn't open automatically"
 
-### Problem: "Cannot connect to API"
+**What to do:**
+1. **Check your terminal** for this line:
+   ```
+   Local URL: http://localhost:8501
+   ```
+2. **Copy that URL**
+3. **Open your browser**
+4. **Paste and press Enter**
+
+---
+
+## 🎯 Network & Connection Issues
+
+### "Cannot reach Supabase"
+
+**Error message:**
+```
+Error connecting to Supabase database
+```
+
+**What it means:** Internet connection or Supabase is down
+
+**Fix:**
+1. Check your internet connection
+2. Try accessing Supabase dashboard directly
+   - https://console.supabase.com
+3. If Supabase is down, wait and try again
+4. Check Supabase status: https://status.supabase.com
+
+---
+
+### "Cannot reach Groq API"
+
+**Error message:**
+```
+Error: Failed to connect to Groq API
+```
+
+**What it means:** Internet issue or Groq is unavailable
+
+**Fix:**
+1. Check your internet
+2. Verify `GROQ_API_KEY` is correct
+3. Try this in a terminal to check internet:
+   ```bash
+   ping google.com
+   ```
+4. Check Groq status on Twitter @groq_dev
+
+---
+
+## 🛠️ Advanced Debugging
+
+### Check what's running on port 8000
+
+**Windows:**
+```bash
+netstat -ano | findstr :8000
+```
+
+**Mac/Linux:**
+```bash
+lsof -i :8000
+```
+
+### See detailed error logs
+
+**Add to main.py:**
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+Then run:
+```bash
+python main.py
+```
+
+### Test API directly
+
+```bash
+# In a new terminal, test health check
+curl http://localhost:8000/
+
+# Should return:
+# {"status":"healthy","message":"Hospital RAG Assistant API is running"}
+```
+
+---
+
+## 💾 Database Issues
+
+### Reset database (delete all documents)
+
+⚠️ **Warning: This deletes everything!**
+
+1. Go to Supabase Dashboard
+2. SQL Editor → New Query
+3. Run:
+   ```sql
+   DELETE FROM documents;
+   ```
+4. Click Run
+
+---
+
+### View what's in database
+
+```bash
+# In Supabase SQL Editor:
+SELECT COUNT(*) FROM documents;
+SELECT filename, COUNT(*) as chunks FROM documents GROUP BY filename;
+```
+
+---
+
+## 🚀 Performance Issues
+
+### "Everything is slow"
+
+**Possible causes:**
+1. **First upload?** Normal - takes 1-2 min
+2. **Embedding model loading?** Normal - first question takes longer
+3. **Too many documents?** Try deleting old ones
+4. **Low RAM?** Close other programs
+
+**Fix:**
+```bash
+# Check system resources
+# Make sure you have at least 2GB free RAM
+# Close Firefox, Chrome, etc.
+# Restart backend and UI
+```
+
+---
+
+### "Embedding model won't download"
 
 **Error:**
 ```
-Error: Cannot connect to API at http://localhost:8000
+Warning: Downloading  (some model)...
+```
+
+**What to do:**
+1. This is normal! First time downloading
+2. Takes 1-2 minutes
+3. Wait patiently
+4. Next time will be instant
+
+---
+
+## 📋 Cannot Find Help?
+
+Still stuck? Check:
+
+1. **README.md** - Full documentation
+2. **GETTING_STARTED.md** - Step-by-step setup
+3. **QUICK_REFERENCE.md** - Common commands
+4. **ARCHITECTURE.md** - How system works
+
+**Or:** Add `--verbose` to commands for more details!
+
+---
+
+## ✅ Verification Checklist
+
+If things seem broken, go through this:
+
+- [ ] `.env` file exists with correct keys?
+- [ ] Backend running (`python main.py`)?
+- [ ] UI running (`streamlit run app_ui.py`)?
+- [ ] Can access http://localhost:8501?
+- [ ] At least one PDF uploaded?
+- [ ] Questions are being asked correctly?
+- [ ] Terminal shows errors? Read error messages!
+- [ ] Restarted everything recently?
+
+If all checked, it should work!
+
+---
+
+## 📞 Last Resort
+
+If nothing works:
+
+1. **Kill everything:**
+   ```bash
+   # Close both terminals (Ctrl+C)
+   # Or: taskkill /F /IM python.exe
+   ```
+
+2. **Clean start:**
+   ```bash
+   rm -rf __pycache__
+   pip install -r requirements.txt --force-reinstall
+   ```
+
+3. **Restart from scratch:**
+   ```bash
+   python main.py           # Terminal 1
+   streamlit run app_ui.py  # Terminal 2
+   ```
+
+Good luck! 🍀
 ```
 
 **Solutions:**

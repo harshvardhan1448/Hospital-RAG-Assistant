@@ -1,106 +1,146 @@
-# Hospital RAG Assistant - Getting Started (5 Min Setup)
+# 🚀 Getting Started - 5 Minute Setup
 
-## ✅ What You're Getting
+Welcome! This guide will get you up and running in just 5 minutes.
 
-A production-ready RAG (Retrieval-Augmented Generation) system that:
-- ✅ Uploads and processes hospital PDFs
-- ✅ Converts documents to embeddings for semantic search
-- ✅ Stores vectors in Supabase (pgvector)
-- ✅ Answers questions using retrieved document context only
-- ✅ Prevents AI hallucination with strict RAG constraints
-- ✅ Provides REST API + Beautiful Streamlit UI
+## ✨ What You're Building
+
+A smart AI assistant that:
+- 📄 Reads your hospital PDF documents
+- 🧠 Understands what's in them
+- 💬 Answers your questions about them
+- 📍 Shows you where the answer came from
+- **💰 Costs $0/month** - Completely FREE!
+
+No complicated setup. No expensive APIs. Just you, your documents, and an AI.
 
 ---
 
-## 🎯 Quick Setup 
+## 📋 Prerequisites (30 seconds)
 
-### Method to Manual Setup
+You need:
+- ✅ Python 3.9+ installed ([python.org](https://python.org))
+- ✅ A text editor (Notepad, VS Code, etc.)
+- ✅ A browser (Chrome, Firefox, Safari, Edge)
+
+That's it! No credit card needed.
+
+---
+
+## 🎯 Setup (4 steps, 5 minutes)
+
+### Step 1️⃣: Download & Install (1 minute)
 
 ```bash
-# 1. Create virtual environment
+# Clone the project
+git clone https://github.com/harshvardhan1448/Hospital-RAG-Assistant.git
+cd Hospital-RAG-Assistant
+
+# Create virtual environment (recommended)
 python -m venv venv
-source venv/bin/activate      # Linux/Mac
-# OR
-venv\Scripts\activate.bat      # Windows
 
-# 2. Install dependencies
+# Activate it
+source venv/bin/activate      # On Mac/Linux
+# OR
+venv\Scripts\activate.bat      # On Windows
+
+# Install dependencies (takes 1 minute)
 pip install -r requirements.txt
-
-# 3. Copy configuration
-cp .env.example .env
-
-# 4. Edit .env with your API keys
-nano .env  # Linux/Mac
-# OR
-notepad .env  # Windows
 ```
+
+✅ Done! You've installed everything needed.
 
 ---
 
-## 🔑 Step 1: Get API Keys (10 Minutes)
+### Step 2️⃣: Get Free API Keys (3 minutes)
 
-### A. Supabase Setup (Database)
+#### 🔹 Get Supabase Key (Database)
 
-1. Go to [supabase.com](https://supabase.com) → Sign Up
-2. Create a new project
-3. Copy credentials:
-   - Go to **Settings** → **API**
-   - Copy **Project URL** → Add to `.env` as `SUPABASE_URL`
-   - Copy **Anon public key** → Add to `.env` as `SUPABASE_KEY`
+1. Go to **[supabase.com](https://supabase.com)**
+2. Click **"Start your project"** 
+3. Sign up with email (takes 60 seconds)
+4. Create a new project (just click "Create Project", wait 30 seconds)
+5. Once created, click **Settings** → **API**
+6. Copy these two values to a text file:
+   - **Project URL** (looks like `https://abc123.supabase.co`)
+   - **Anon public** (long string starting with `eyJ...`)
 
-4. Run database setup (one-time):
-   - Go to **SQL Editor** in Supabase dashboard
-   - Create new query
-   - Copy entire content of `supabase_setup.sql`
-   - Paste into SQL Editor
-   - Click **Run**
+That's it for Supabase!
 
-✅ Database is ready!
+#### 🔹 Get Groq Key (AI Model)
 
-### B. OpenAI API Key (For Embeddings)
+1. Go to **[console.groq.com](https://console.groq.com)**
+2. Sign up (takes 1 minute)
+3. Click **API Keys** on the left
+4. Click **Create New API Key**
+5. Copy the key (looks like `gsk_...`)
 
-1. Go to [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-2. Create new API key
-3. Add to `.env` as `OPENAI_API_KEY`
+Done! You now have all the keys you need.
 
-⚠️ Free trial may be expired. Add payment method if needed.
+✅ **No payment needed!** Free tier is unlimited.
 
-### C. Groq API Key (For LLM - RECOMMENDED & FREE)
+---
 
-1. Go to [console.groq.com](https://console.groq.com) → Sign Up
-2. Create API key
-3. Add to `.env` as `GROQ_API_KEY`
+### Step 3️⃣: Configure Your App (1 minute)
 
-✅ Free tier has generous limits!
-
-### Your `.env` file should look like:
+1. Open your project folder in a text editor
+2. Find the file `.env.example`
+3. Create a new file called `.env` (the same folder)
+4. Copy-paste this into `.env`:
 
 ```
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=eyJhbGciOiJIUz...
-OPENAI_API_KEY=sk-proj-...
-GROQ_API_KEY=gsk_...
-LLM_PROVIDER=groq
+SUPABASE_URL=paste_your_supabase_url_here
+SUPABASE_KEY=paste_your_supabase_key_here
+GROQ_API_KEY=paste_your_groq_key_here
 API_BASE_URL=http://localhost:8000
 ```
 
+5. Replace the values with what you copied from Supabase and Groq
+6. Save the file
+
+✅ Configuration done!
+
 ---
 
-## 🚀 Step 2: Start the Application
+### Step 4️⃣: Setup Database (1 minute, one-time)
 
-### Terminal 1 - Start Backend API:
+This creates the table where your documents will live.
+
+1. Go to your **Supabase Dashboard** 
+   - [Go to console.supabase.com](https://console.supabase.com)
+2. Select the project you created
+3. On the left sidebar, click **SQL Editor**
+4. Click **New Query** (or **+ icon**)
+5. Open the file `supabase_setup.sql` from your project folder
+6. **Copy everything** in that file
+7. **Paste** it into the Supabase SQL Editor
+8. Click **Run** (at the bottom right)
+
+You should see: "Query succeeded!"
+
+✅ Your database is ready!
+
+---
+
+## 🎬 Run the Application
+
+Now the fun part! Open **two terminal windows** side by side.
+
+### Window 1: Start the AI Backend
+
 ```bash
 python main.py
 ```
 
 You should see:
 ```
+✓ Application initialized successfully
 INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
 
-✅ API is running at http://localhost:8000
+✅ Backend is running!
 
-### Terminal 2 - Start Frontend UI:
+### Window 2: Start the Web Interface
+
 ```bash
 streamlit run app_ui.py
 ```
@@ -111,93 +151,96 @@ You can now view your Streamlit app in your browser.
 Local URL: http://localhost:8501
 ```
 
-✅ UI is running at http://localhost:8501
+✅ A browser window should open automatically!
 
 ---
 
-## 📤 Step 3: Upload Your First Document
+## 🎉 First Use
 
-1. Open http://localhost:8501 in browser
-2. In left sidebar, click **"Upload Hospital Document (PDF)"**
-3. Select a hospital PDF file
-4. Click **"📤 Upload Document"**
-5. Wait for processing (you'll see: "✓ Document uploaded successfully!")
+### 1. Upload a PDF
 
-⚠️ First upload takes longer (generates embeddings)
+1. In the left sidebar, you'll see **"Upload Hospital Document (PDF)"**
+2. Click the area or the **"Upload Document"** button
+3. Select a hospital PDF from your computer
+4. Wait for it to upload (you'll see a progress message)
 
----
+### 2. Ask a Question
 
-## 💬 Step 4: Ask Questions
+1. In the main area, type a question:
+   ```
+   What are the OPD timings?
+   ```
 
-1. In main chat area, type a question:
-   - "What are OPD timings?"
-   - "Who is the cardiologist?"
-   - "What is the cost of MRI?"
+2. Click the **"Ask"** button (or press Enter)
 
-2. Click **"🔍 Ask"**
+3. The AI reads your documents and gives you an answer with sources!
 
-3. See the AI answer with sources!
-
----
-
-## 🧪 Step 5: Verify Everything Works
-
-```bash
-# In a third terminal, test the API
-python test_api.py path/to/hospital.pdf
-```
-
-This will:
-- ✅ Test API health
-- ✅ Upload document
-- ✅ Test example queries
-- ✅ Show results
-
----
-
-## 📊 Project Structure
+### 3. Try More Questions
 
 ```
-NexovAi/
-├── 🔧 Core Components
-│   ├── main.py              # FastAPI backend
-│   ├── app_ui.py            # Streamlit UI
-│   ├── ingestion.py         # PDF processing
-│   ├── rag_pipeline.py      # Answer generation
-│   └── supabase_db.py       # Database manager
-│
-├── ⚙️ Configuration
-│   ├── config.py            # Settings
-│   ├── .env.example         # Template
-│   └── requirements.txt     # Dependencies
-│
-├── 🗄️ Database
-│   └── supabase_setup.sql   # Create tables
-│
-├── 📚 Documentation
-│   ├── README.md            # Full docs
-│   ├── QUICK_REFERENCE.md   # Cheat sheet
-│   ├── ARCHITECTURE.md      # System design
-│   ├── DEPLOYMENT.md        # Deploy guide
-│   └── TROUBLESHOOTING.md   # Fix issues
-│
-└── 🚢 Deployment
-    ├── Dockerfile           # Docker image
-    └── docker-compose.yml   # Services
+Who is the cardiologist?
+What is the MRI cost?
+What is the emergency number?
+Can I cancel appointments?
 ```
 
 ---
 
-## 🎯 Next Steps
+## ✅ Everything Working?
 
-### Immediate (after setup):
-- [ ] Test with sample PDF
-- [ ] Ask example queries
-- [ ] Run `test_api.py`
+If you see:
+- ✅ AI answers appear in the web interface
+- ✅ Answers show source pages
+- ✅ No red error messages
+- ✅ Uploaded documents appear in the sidebar
 
-### Short Term (next few hours):
-- [ ] Customize `config.py` for your needs
-- [ ] Test with your actual hospital PDFs
+**Congratulations! 🎊 You're all set!**
+
+---
+
+## 📞 Quick Help
+
+### "I got an error about missing keys"
+→ Make sure `.env` file exists and has the correct values
+
+### "Database connection failed"  
+→ Check that `SUPABASE_URL` and `SUPABASE_KEY` are correct
+
+### "Upload hangs or takes too long"
+→ First time takes longer (generating embeddings). Be patient!
+
+### "API won't start"
+→ Make sure port 8000 is not used by another app
+
+See **TROUBLESHOOTING.md** for more help!
+
+---
+
+## 📚 Next Steps
+
+Now that it's working:
+
+1. **Test with real documents** - Upload your actual hospital PDFs
+2. **Read QUICK_REFERENCE.md** - Useful commands and tips
+3. **Check ARCHITECTURE.md** - Understand how it works
+4. **Customize config.py** - Change how many results, chunk sizes, etc.
+
+---
+
+## 🎯 Example Questions to Try
+
+Use a hospital PDF and ask:
+
+```
+"What are OPD timings?"
+"Emergency number?"
+"Cost of MRI scan?"
+"Cardiology department location?"
+"ICU cost per day?"
+"Can I cancel within 24 hours?"
+```
+
+Enjoy! 🚀
 - [ ] Verify answers are accurate
 
 ### Medium Term (next few days):

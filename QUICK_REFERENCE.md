@@ -1,83 +1,242 @@
-# Hospital RAG Assistant - Quick Reference Guide
+# ⚡ Quick Reference Guide
 
-## 🚀 Getting Started (5 Minutes)
-
-### Installation
-```bash
-# 1. Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate.bat
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Setup configuration
-cp .env.example .env
-# Edit .env with your API keys
-
-# 4. Setup database (one-time)
-# Go to https://supabase.com/dashboard
-# Run SQL from supabase_setup.sql in SQL Editor
-
-# 5. Start API backend
-python main.py
-
-# 6. In another terminal, start UI
-streamlit run app_ui.py
-```
-
-**Access:**
-- API Docs: http://localhost:8000/docs
-- Streamlit UI: http://localhost:8501
+This is your cheat sheet. Keep this handy!
 
 ---
 
-## 📋 API Quick Reference
+## 🎯 5-Second Setup Reminder
 
-### Upload Document
 ```bash
-curl -X POST "http://localhost:8000/upload" \
-  -F "file=@hospital.pdf"
+cp .env.example .env              # Copy env template
+# Edit .env with your API keys     # Add Supabase + Groq keys
+python main.py                    # Terminal 1: Start backend
+streamlit run app_ui.py           # Terminal 2: Start UI
 ```
 
-### Ask Question
+Then open: **http://localhost:8501**
+
+---
+
+## 📍 Where Things Are
+
+| What | Location | What It Does |
+|------|----------|--------------|
+| Upload button | Left sidebar | Upload PDF documents |
+| Ask questions | Top of page | Type questions here |
+| Results | Middle area | See AI answers |
+| Chat history | Left sidebar | See past questions |
+| Your documents | Left sidebar | List of uploaded PDFs |
+| API docs | http://localhost:8000/docs | Test API endpoints |
+| Logs | Terminal window | See what's happening |
+
+---
+
+## 💬 API Command Reference
+
+### Upload a PDF
+```bash
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@your_hospital.pdf"
+```
+
+### Ask a Question
 ```bash
 curl -X POST "http://localhost:8000/query" \
   -H "Content-Type: application/json" \
-  -d '{"question": "What are OPD timings?"}'
+  -d '{"question": "What is the emergency number?"}'
 ```
 
-### Get Documents List
+### Get List of All Documents
 ```bash
 curl "http://localhost:8000/documents"
 ```
 
-### Delete Document
+### Delete a Document
 ```bash
 curl -X DELETE "http://localhost:8000/documents/hospital.pdf"
 ```
 
 ---
 
-## ⚙️ Configuration Tweaks
+## ⚙️ Tweaking Settings
 
-### For Better Quality Answers
+Edit `config.py` to customize:
+
+### For Better Answers (Slower):
 ```python
-# config.py
-TOP_K_CHUNKS = 5      # More context (default: 4)
-CHUNK_SIZE = 1000     # Larger chunks (default: 500)
-CHUNK_OVERLAP = 200   # More context (default: 100)
+TOP_K_CHUNKS = 6          # Fetch more similar chunks (default: 4)
+CHUNK_SIZE = 1000         # Bigger text chunks (default: 500)
+CHUNK_OVERLAP = 200       # More context sharing (default: 100)
 ```
 
-### For Faster Responses
+### For Faster Answers (Less Accurate):
 ```python
-# config.py
-TOP_K_CHUNKS = 3      # Less context
-CHUNK_SIZE = 300      # Smaller chunks
+TOP_K_CHUNKS = 2          # Fetch fewer chunks
+CHUNK_SIZE = 300          # Smaller chunks
+CHUNK_OVERLAP = 50        # Less overlap
 ```
 
-### Switch LLM Provider
+### Change AI Model
+The system uses:
+- **Embeddings**: `all-MiniLM-L6-v2` (local, 384-dim)
+- **LLM**: `llama-3.1-8b-instant` (Groq)
+
+To change, edit `config.py`:
+```python
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"  # Can't change (local only)
+```
+
+---
+
+## 🐛 Quick Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| "supabase_url is required" | Add `SUPABASE_URL` to `.env` |
+| "API won't start" | Port 8000 in use. Kill other Python processes |
+| "Upload hangs" | Normal! First upload takes 1-2 min |
+| "Can't connect to Groq" | Check `GROQ_API_KEY` in `.env` |
+| "Found 0 chunks" | Document might not have answer. Try different question |
+| "Database error" | Restart both terminals (backend + UI) |
+
+---
+
+## 📊 Understanding the Output
+
+When you ask a question, you see:
+
+```
+Question: What are OPD timings?
+
+Answer: The OPD timings are 9:00 AM to 5:00 PM.
+
+Sources: page 1
+📊 2 relevant chunks retrieved
+```
+
+**What this means:**
+- ✅ Question was answered
+- ✅ System found 2 chunks with info
+- ✅ Sources show where answer came from
+
+---
+
+## 🔍 Example Queries to Try
+
+Copy-paste these into the question box:
+
+```
+What are the OPD timings?
+Who is the cardiologist?
+What is the MRI cost?
+Emergency number?
+Can I cancel within 24 hours?
+What is the ICU cost per day?
+```
+
+---
+
+## 📂 Project Structure at a Glance
+
+```
+Hospital-RAG-Assistant/
+├── main.py              ← Start backend
+├── app_ui.py            ← Start UI
+├── ingestion.py         ← Document processing
+├── rag_pipeline.py      ← Question answering
+├── supabase_db.py       ← Database operations
+├── embeddings.py        ← Embedding creation
+├── config.py            ← Settings (edit this!)
+├── requirements.txt     ← Dependencies
+├── .env                 ← Your API keys (don't commit!)
+├── supabase_setup.sql   ← Database schema
+└── README.md            ← Full documentation
+```
+
+---
+
+## 🚀 Performance Tips
+
+| Task | Time | Notes |
+|------|------|-------|
+| First upload | 1-2 min | Creates embeddings |
+| 2nd+ uploads | 10-30 sec | Reuses loaded model |
+| Question | 1-3 sec | Most models are cached |
+| Database search | 100ms | Fast vector search |
+
+**Tip**: First upload is slow because it downloads the embedding model. Subsequent uploads are much faster!
+
+---
+
+## 🔐 Security Checklist
+
+- [ ] `.env` file created? (not `.env.example`)
+- [ ] `.env` added to `.gitignore`? (it should be)
+- [ ] API keys kept secret? (never in code)
+- [ ] Not sharing `.env` with anyone?
+- [ ] Not uploading `.env` to GitHub?
+
+---
+
+## 📞 Common Questions
+
+**Q: Do I need to pay?**
+A: No! Free APIs only (Supabase free tier, Groq free tier)
+
+**Q: Is my data private?**
+A: Yes! Stored in YOUR Supabase, you control access
+
+**Q: Can I use other PDF files?**
+A: Yes! Any PDF works. Hospital documents are examples
+
+**Q: Can I add more documents?**
+A: Yes! Upload as many as you want (free tier: unlimited)
+
+**Q: What if answer is wrong?**
+A: System can only answer from uploaded documents. Try different question
+
+**Q: How much can I upload?**
+A: Supabase free tier: plenty. See their pricing for limits
+
+---
+
+## 🎯 Next Steps
+
+1. **Try example questions** (see list above)
+2. **Upload real PDFs** and test
+3. **Look at ARCHITECTURE.md** to understand how it works
+4. **Check TROUBLESHOOTING.md** if issues arise
+5. **Visit DEPLOYMENT.md** when ready to share
+
+---
+
+## 💡 Pro Tips
+
+- 💡 Ask specific questions ("What is?" vs "Tell me about")
+- 💡 Longer chunks = more context but slower
+- 💡 Upload 1-2 test PDFs first
+- 💡 Check API logs if something breaks
+- 💡 Keep `.env` file safe!
+
+---
+
+## 🆘 Emergency Commands
+
 ```bash
+# Kill everything and restart
+taskkill /F /IM python.exe          # Windows
+
+# Check if ports are in use
+lsof -i :8000                       # Mac/Linux
+netstat -ano | findstr :8000        # Windows
+
+# Force refresh (clear cache)
+rm -rf __pycache__                 # Linux/Mac
+rmdir /s __pycache__               # Windows
+
+# Reinstall dependencies
+pip install -r requirements.txt --force-reinstall
+```
 # .env
 # For Groq (free, recommended):
 LLM_PROVIDER=groq
