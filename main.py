@@ -8,6 +8,7 @@ import config
 from ingestion import ingest_document
 from rag_pipeline import answer_query
 from supabase_db import get_supabase_manager
+from embeddings import get_model  # Preload model at startup
 
 
 # ==================== Lifespan (replaces deprecated on_event) ====================
@@ -16,11 +17,15 @@ from supabase_db import get_supabase_manager
 async def lifespan(app: FastAPI):
     """Initialize on startup, cleanup on shutdown."""
     try:
+        print("[STARTUP] Loading embedding model...")
+        get_model()  # Preload model at startup to avoid memory issues
+        print("[STARTUP] ✓ Embedding model loaded successfully")
+        
         supabase = get_supabase_manager()
         await supabase.create_table_if_not_exists()
         print("✓ Application initialized successfully")
     except Exception as e:
-        print(f"Warning: Could not verify Supabase connection: {str(e)}")
+        print(f"Warning: Could not initialize: {str(e)}")
         print("Please ensure your .env file has correct SUPABASE_URL and SUPABASE_KEY")
     yield  # App runs here
 
