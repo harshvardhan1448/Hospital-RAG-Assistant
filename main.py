@@ -9,6 +9,8 @@ from ingestion import ingest_document
 from rag_pipeline import answer_query
 from supabase_db import get_supabase_manager
 
+APP_VERSION = "local-embed-2026-04-03-01"
+
 
 # ==================== Lifespan (replaces deprecated on_event) ====================
 
@@ -16,6 +18,7 @@ from supabase_db import get_supabase_manager
 async def lifespan(app: FastAPI):
     """Initialize on startup, cleanup on shutdown."""
     try:
+        print(f"[STARTUP] App version: {APP_VERSION}")
         print("[STARTUP] Initializing Hospital RAG Assistant API...")
         supabase = get_supabase_manager()
         await supabase.create_table_if_not_exists()
@@ -68,11 +71,21 @@ class HealthResponse(BaseModel):
     message: str
 
 
+class VersionResponse(BaseModel):
+    status: str
+    version: str
+
+
 # ==================== Endpoints ====================
 
 @app.get("/", response_model=HealthResponse)
 async def health_check():
     return {"status": "healthy", "message": "Hospital RAG Assistant API is running"}
+
+
+@app.get("/version", response_model=VersionResponse)
+async def version_check():
+    return {"status": "ok", "version": APP_VERSION}
 
 
 @app.post("/upload", response_model=UploadResponse)
