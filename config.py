@@ -16,7 +16,7 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"  # 384 dimensions
 EMBEDDING_DIMENSION = 384
 
 # RAG Configuration
-TOP_K_CHUNKS = 4
+TOP_K_CHUNKS = 8  # Increased from 4 to ensure all relevant chunks are retrieved
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
 
