@@ -2,7 +2,6 @@ import io
 import re
 import PyPDF2
 from typing import List, Tuple
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from embeddings import embed_texts   # <-- use shared module
 import config
 
@@ -22,12 +21,28 @@ async def extract_text_from_pdf(pdf_file) -> Tuple[str, int]:
 
 
 def chunk_text(text: str) -> List[str]:
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=config.CHUNK_SIZE,
-        chunk_overlap=config.CHUNK_OVERLAP,
-        separators=["\n\n", "\n", " ", ""]
-    )
-    return splitter.split_text(text)
+    """Split text into overlapping character chunks without external dependencies."""
+    if not text:
+        return []
+
+    chunk_size = max(1, int(config.CHUNK_SIZE))
+    overlap = max(0, min(int(config.CHUNK_OVERLAP), chunk_size - 1))
+    step = chunk_size - overlap
+
+    chunks: List[str] = []
+    start = 0
+    text_length = len(text)
+
+    while start < text_length:
+        end = min(start + chunk_size, text_length)
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+        if end >= text_length:
+            break
+        start += step
+
+    return chunks
 
 
 def prepare_documents_for_storage(text: str, filename: str) -> List[dict]:
