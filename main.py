@@ -4,12 +4,33 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
+import asyncio
 import config
 from ingestion import ingest_document
 from rag_pipeline import answer_query
 from supabase_db import get_supabase_manager
 
 APP_VERSION = "improved-retrieval-2026-04-05-01"
+
+# Global flag to track if model is loaded
+_model_warming_started = False
+
+
+async def _warm_model_in_background():
+    """Load the SentenceTransformer model in background to avoid startup timeout."""
+    global _model_warming_started
+    if _model_warming_started:
+        return
+    _model_warming_started = True
+    
+    try:
+        print("[BACKGROUND] Starting model warmup...")
+        from embeddings import get_model
+        model = get_model()
+        test_embedding = model.encode("test")
+        print(f"[BACKGROUND] Model loaded successfully ({len(test_embedding)}-dimensional embeddings)")
+    except Exception as e:
+        print(f"[BACKGROUND] Warning: Could not pre-load model: {str(e)}")
 
 
 # ==================== Lifespan (replaces deprecated on_event) ====================
@@ -23,12 +44,8 @@ async def lifespan(app: FastAPI):
         supabase = get_supabase_manager()
         await supabase.create_table_if_not_exists()
         
-        # Warm up the SentenceTransformer model to avoid timeout on first request
-        print("[STARTUP] Warming up embedding model (this might take 15-20 seconds)...")
-        from embeddings import get_model
-        model = get_model()
-        test_embedding = model.encode("test")
-        print(f"✓ Model loaded successfully ({len(test_embedding)}-dimensional embeddings)")
+        # Start model warming in background (non-blocking)
+        asyncio.create_task(_warm_model_in_background())
         
         print("✓ Application initialized successfully")
     except Exception as e:
