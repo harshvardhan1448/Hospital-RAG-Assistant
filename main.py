@@ -9,7 +9,7 @@ from ingestion import ingest_document
 from rag_pipeline import answer_query
 from supabase_db import get_supabase_manager
 
-APP_VERSION = "local-embed-2026-04-03-01"
+APP_VERSION = "improved-retrieval-2026-04-05-01"
 
 
 # ==================== Lifespan (replaces deprecated on_event) ====================
