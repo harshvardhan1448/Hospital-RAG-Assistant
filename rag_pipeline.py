@@ -25,17 +25,47 @@ def _is_timing_query(query: str) -> bool:
     return bool(tokens.intersection(keywords))
 
 
+def _expand_query(query: str) -> List[str]:
+    """Generate query variants with common medical synonyms for better retrieval."""
+    variants = [query]
+    q_lower = query.lower()
+    
+    # Synonym mappings for medical terms
+    synonyms = {
+        "timing": ["hour", "hours", "time"],
+        "timings": ["hours", "time", "schedule"],
+        "opd": ["outpatient", "outpatient department", "clinic"],
+        "closed": ["not available", "unavailable", "open"],
+        "available": ["open", "active", "operating"]
+    }
+    
+    for word, alternatives in synonyms.items():
+        if word in q_lower:
+            for alt in alternatives:
+                variants.append(q_lower.replace(word, alt))
+    
+    return list(set(variants))  # Remove duplicates
+
+
 def _rerank_chunks(query: str, chunks: List[dict]) -> List[dict]:
     """Combine vector similarity with token overlap for more stable top results."""
     query_tokens = _tokenize(query)
     scored = []
+    
+    # For timing queries, weight lexical overlap more heavily
+    is_timing = _is_timing_query(query)
+    vector_weight = 0.6 if is_timing else 0.8
+    overlap_weight = 0.4 if is_timing else 0.2
 
     for chunk in chunks:
         similarity = float(chunk.get("similarity", 0) or 0)
         chunk_tokens = _tokenize(chunk.get("content", ""))
-        overlap = len(query_tokens.intersection(chunk_tokens))
-        # Keep vector relevance as primary, but boost chunks with direct keyword overlap.
-        score = (0.8 * similarity) + (0.2 * overlap)
+        
+        # Calculate overlap as a ratio of query tokens found
+        overlap_score = len(query_tokens.intersection(chunk_tokens)) / max(len(query_tokens), 1)
+        
+        # Combined score with timing-aware weighting
+        score = (vector_weight * similarity) + (overlap_weight * overlap_score)
         scored.append((score, chunk))
 
     scored.sort(key=lambda item: item[0], reverse=True)
@@ -54,12 +84,40 @@ def get_llm_client() -> ChatGroq:
     )
 
 async def retrieve_relevant_chunks(query: str, k: int = config.TOP_K_CHUNKS) -> List[dict]:
-    """Retrieve top-k most relevant document chunks for the query."""
+    """Retrieve top-k most relevant document chunks for the query.
+    
+    If initial retrieval yields low-confidence results for timing queries,
+    tries expanded query variants for better matching.
+    """
     try:
         query_embedding = get_query_embedding(query)
         supabase = get_supabase_manager()
         chunks = await supabase.similarity_search(query_embedding, k=k)
-        return _rerank_chunks(query, chunks)
+        reranked = _rerank_chunks(query, chunks)
+        
+        # For timing queries with poor results, try expanded variants
+        if _is_timing_query(query) and reranked:
+            best_score = float(reranked[0].get("similarity", 0) or 0)
+            if best_score < 0.5:  # Low confidence threshold
+                print(f"[DEBUG] Low confidence ({best_score:.3f}) for timing query, trying expansions...")
+                variants = _expand_query(query)
+                all_chunks = dict()  # Deduplicate by content
+                
+                for variant in variants:
+                    if variant == query:
+                        continue  # Already tried
+                    var_embedding = get_query_embedding(variant)
+                    var_chunks = await supabase.similarity_search(var_embedding, k=k)
+                    for chunk in var_chunks:
+                        key = chunk["content"][:100]  # Use content prefix as key
+                        if key not in all_chunks or chunk.get("similarity", 0) > all_chunks[key].get("similarity", 0):
+                            all_chunks[key] = chunk
+                
+                # Combine and rerank all results
+                combined = list(all_chunks.values()) + chunks
+                reranked = _rerank_chunks(query, combined)
+        
+        return reranked
     except Exception as e:
         print(f"Error retrieving chunks: {str(e)}")
         import traceback
