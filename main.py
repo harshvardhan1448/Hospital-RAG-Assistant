@@ -22,6 +22,14 @@ async def lifespan(app: FastAPI):
         print("[STARTUP] Initializing Hospital RAG Assistant API...")
         supabase = get_supabase_manager()
         await supabase.create_table_if_not_exists()
+        
+        # Warm up the SentenceTransformer model to avoid timeout on first request
+        print("[STARTUP] Warming up embedding model (this might take 15-20 seconds)...")
+        from embeddings import get_model
+        model = get_model()
+        test_embedding = model.encode("test")
+        print(f"✓ Model loaded successfully ({len(test_embedding)}-dimensional embeddings)")
+        
         print("✓ Application initialized successfully")
     except Exception as e:
         print(f"Warning: Could not initialize: {str(e)}")
